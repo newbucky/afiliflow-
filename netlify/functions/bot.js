@@ -31,7 +31,7 @@ bot.command('adicionargrupo', async (ctx) => {
 
 bot.command('listagrupos', async (ctx) => {
   const { data } = await supabase.from('grupos').select('*');
-  const lista = data?.map((g, i) => ${i+1}. ${g.nome}).join('\n') || 'Nenhum grupo cadastrado.';
+  const lista = data?.map((g, i) => `${i+1}. ${g.nome}`).join('\n') || 'Nenhum grupo cadastrado.';
   ctx.reply(`📋 Grupos cadastrados:\n${lista || 'Nenhum grupo cadastrado.'}`);
 });
 
