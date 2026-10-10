@@ -26,13 +26,13 @@ bot.command('adicionargrupo', async (ctx) => {
     .from('grupos')
     .upsert({ id: chatId, nome: chatTitle, ativo: true });
   
-  ctx.reply(✅ Grupo "${chatTitle}" adicionado com sucesso!);
+  ctx.reply(`✅ Grupo "${chatTitle}" adicionado com sucesso!`);
 });
 
 bot.command('listagrupos', async (ctx) => {
   const { data } = await supabase.from('grupos').select('*');
   const lista = data?.map((g, i) => ${i+1}. ${g.nome}).join('\n') || 'Nenhum grupo cadastrado.';
-  ctx.reply(👥 Grupos cadastrados:\n${lista});
+  ctx.reply(`📋 Grupos cadastrados:\n${lista || 'Nenhum grupo cadastrado.'}`);
 });
 
 bot.command('removergrupo', async (ctx) => {
