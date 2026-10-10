@@ -1,0 +1,10 @@
+{
+  "name": "afiliflow",
+  "version": "1.0.0",
+  "description": "Automação de ofertas para Telegram",
+  "dependencies": {
+    "telegraf": "^4.16.0",
+    "@supabase/supabase-js": "^2.45.0",
+    "axios": "^1.7.0"
+  }
+}
