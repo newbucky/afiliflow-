@@ -62,7 +62,7 @@ bot.hears(/^adicionar (.+) (\d+)/, async (ctx, match) => {
     });
     ctx.reply('✅ Oferta adicionada!');
   } else {
-    ctx.reply(❌ Desconto mínimo é de ${minDiscount}%);
+    ctx.reply(`❌ Desconto mínimo é de ${minDiscount}%`);
   }
 });
 
