@@ -81,10 +81,14 @@ bot.command('ajuda', (ctx) => {
 
 exports.handler = async (event) => {
   try {
-    await bot.handleUpdate(JSON.parse(event.body));
+    if (!event.body) {
+      return { statusCode: 200, body: 'OK' };
+    }
+    const update = JSON.parse(event.body);
+    await bot.handleUpdate(update);
     return { statusCode: 200, body: '' };
   } catch (err) {
     console.error('Erro:', err);
-    return { statusCode: 500, body: 'Erro interno' };
+    return { statusCode: 200, body: '' };
   }
 };
