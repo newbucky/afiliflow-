@@ -22,7 +22,7 @@ Comandos disponíveis:
 bot.command('status', async (ctx) => {
   ctx.reply(`📊 AfiliFlow - Sistema Online ✅
 💸 Desconto mínimo: ${process.env.MIN_DISCOUNT || 20}%
-⏱️ Pico: ${process.env.INTERVAL_PEAK || 5}min | Normal: ${process.env.INTERVAL_NORMAL || 15}min`);
+⏱ Pico: ${process.env.INTERVAL_PEAK || 5}min | Normal: ${process.env.INTERVAL_NORMAL || 15}min`);
 });
 
 // Comando /adicionar link desconto
@@ -41,12 +41,12 @@ bot.hears(/^adicionar (.+) (\d+)/, async (ctx, match) => {
     });
 
     if (error) {
-      ctx.reply(❌ Erro ao salvar oferta: ${error.message});
+      ctx.reply(`❌ Erro ao salvar oferta: ${error.message}`);
     } else {
-      ctx.reply(✅ Oferta adicionada! 🔗 ${link} | 🏷️ ${desconto}%);
+      ctx.reply(`✅ Oferta adicionada! 🔗 ${link} | 🏷️ ${desconto}%`);
     }
   } else {
-    ctx.reply(❌ Desconto mínimo é de ${minDiscount}%);
+    ctx.reply(`❌ Desconto mínimo é de ${minDiscount}%`);
   }
 });
 
@@ -58,12 +58,12 @@ bot.command('grupos', async (ctx) => {
     .order('nome');
 
   if (error) {
-    ctx.reply(❌ Erro ao buscar grupos: ${error.message});
+    ctx.reply(`❌ Erro ao buscar grupos: ${error.message}`);
     return;
   }
 
-  const lista = data?.map((g, i) => ${i+1}. ${g.nome}).join('\n') || 'Nenhum grupo cadastrado.';
-  ctx.reply(📋 Grupos cadastrados:\n${lista});
+  const lista = data?.map((g, i) => `${i+1}. ${g.nome}`).join('\n') || 'Nenhum grupo cadastrado.';
+  ctx.reply(`📋 Grupos cadastrados:\n${lista}`);
 });
 
 // Comando /ajuda
@@ -79,7 +79,6 @@ bot.command('ajuda', (ctx) => {
 💡 O bot buscará produtos com desconto e postará automaticamente nos grupos cadastrados!`);
 });
 
-// Exportação para Netlify
 exports.handler = async (event) => {
   try {
     await bot.handleUpdate(JSON.parse(event.body));
