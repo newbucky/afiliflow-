@@ -84,11 +84,22 @@ exports.handler = async (event) => {
     if (!event.body) {
       return { statusCode: 200, body: 'OK' };
     }
-    const update = JSON.parse(event.body);
+    
+    let update;
+    try {
+      update = JSON.parse(event.body);
+    } catch (parseErr) {
+      console.error('Erro ao parsear JSON:', parseErr);
+      return { statusCode: 200, body: 'OK' };
+    }
+    
     await bot.handleUpdate(update);
-    return { statusCode: 200, body: '' };
+    return { 
+      statusCode: 200, 
+      body: JSON.stringify({ status: 'received' })
+    };
   } catch (err) {
     console.error('Erro:', err);
-    return { statusCode: 200, body: '' };
+    return { statusCode: 200, body: 'OK' };
   }
 };
