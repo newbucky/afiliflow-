@@ -3,12 +3,10 @@ const { createClient } = require('@supabase/supabase-js');
 
 const bot = new Telegraf(process.env.TELEGRAM_BOT_TOKEN);
 
-// Inicializa Supabase
 const supabaseUrl = process.env.SUPABASE_URL;
 const supabaseKey = process.env.SUPABASE_ANON_KEY;
 const supabase = createClient(supabaseUrl, supabaseKey);
 
-// /start
 bot.command('start', (ctx) => {
   return ctx.reply(
     'Bem-vindo ao AfiliFlow!\n\n' +
@@ -20,7 +18,6 @@ bot.command('start', (ctx) => {
   );
 });
 
-// /ajuda
 bot.command('ajuda', (ctx) => {
   return ctx.reply(
     'Comandos do AfiliFlow:\n\n' +
@@ -32,13 +29,9 @@ bot.command('ajuda', (ctx) => {
   );
 });
 
-// /grupos
 bot.command('grupos', async (ctx) => {
   try {
-    const { data, error } = await supabase
-      .from('grupos')
-      .select('*');
-    
+    const { data, error } = await supabase.from('grupos').select('*');
     if (error) throw error;
     
     if (!data || data.length === 0) {
@@ -49,15 +42,13 @@ bot.command('grupos', async (ctx) => {
     data.forEach((g, i) => {
       lista += `${i + 1}. ${g.nome} (ID: ${g.chat_id})\n`;
     });
-    
     return ctx.reply(lista);
   } catch (err) {
-    console.error(err);
-    return ctx.reply('Erro ao buscar grupos.');
+    console.error('Erro grupos:', err);
+    return ctx.reply('Erro ao buscar grupos: ' + err.message);
   }
 });
 
-// /status
 bot.command('status', (ctx) => {
   return ctx.reply(
     'Status do AfiliFlow:\n' +
@@ -68,7 +59,6 @@ bot.command('status', (ctx) => {
   );
 });
 
-// /adicionar
 bot.command('adicionar', async (ctx) => {
   const args = ctx.message.text.split(' ').slice(1);
   
@@ -77,19 +67,27 @@ bot.command('adicionar', async (ctx) => {
   }
   
   const link = args[0];
-  const desconto = args[1];
+  const desconto = parseInt(args[1]);
+  
+  if (isNaN(desconto)) {
+    return ctx.reply('Desconto precisa ser um numero! Exemplo: 20');
+  }
   
   try {
-    const { error } = await supabase
+    const { data, error } = await supabase
       .from('ofertas')
-      .insert([{ link, desconto }]);
+      .insert([{ link, desconto }])
+      .select();
     
-    if (error) throw error;
+    if (error) {
+      console.error('Erro do Supabase:', error);
+      return ctx.reply('❌ Erro: ' + error.message);
+    }
     
-    return ctx.reply('✅ Oferta cadastrada com sucesso!');
+    return ctx.reply('✅ Oferta cadastrada com sucesso! ID: ' + data[0].id);
   } catch (err) {
-    console.error(err);
-    return ctx.reply('❌ Erro ao cadastrar oferta.');
+    console.error('Erro capturado:', err);
+    return ctx.reply('❌ Erro: ' + err.message);
   }
 });
 
@@ -111,7 +109,7 @@ exports.handler = async (event) => {
       body: JSON.stringify({ ok: true })
     };
   } catch (err) {
-    console.error('Erro:', err);
+    console.error('Erro geral:', err);
     return { statusCode: 200, body: 'OK' };
   }
 };
