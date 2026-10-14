@@ -115,79 +115,81 @@ exports.handler = async (event) => {
 };
 // Comando /publicar — Envia uma oferta pendente para o grupo
   if (comando === '/publicar') {
-    try {
-      // Pega a primeira oferta não enviada mais antiga
-      const { data: oferta, error: erroOferta } = await supabase
-        .from('ofertas')
-        .select('*')
-        .eq('enviada', false)
-        .order('criado_em', { ascending: true })
-        .limit(1)
-        .single()
+    (async () => {
+      try {
+        const { data: oferta, error: erroOferta } = await supabase
+          .from('ofertas')
+          .select('*')
+          .eq('enviada', false)
+          .order('criado_em', { ascending: true })
+          .limit(1)
+          .single()
 
-      if (erroOferta || !oferta) {
-        return ctx.reply('📭 Nenhuma oferta pendente para publicar!')
-      }
-
-      // Pega os grupos ativos
-      const { data: grupos, error: erroGrupo } = await supabase
-        .from('grupos')
-        .select('*')
-
-      if (erroGrupo || !grupos || grupos.length === 0) {
-        return ctx.reply('❌ Nenhum grupo cadastrado! Use /grupos primeiro.')
-      }
-
-      // Monta a mensagem
-      const mensagem = `🔥 OFERTA IMPERDÍVEL! 🔥\n\n${oferta.titulo || 'Produto em promoção'}\n💰 ${oferta.preco}\n📉 Desconto: ${oferta.desconto}%\n👉 ${oferta.link}\n\n🛒 Corre e aproveita!`
-
-      let enviados = 0
-      for (const grupo of grupos) {
-        try {
-          await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              chat_id: grupo.chat_id,
-              text: mensagem,
-              disable_web_page_preview: false
-            })
-          })
-          enviados++
-        } catch (e) {
-          console.log(`Erro ao enviar para ${grupo.nome}:`, e)
+        if (erroOferta || !oferta) {
+          return ctx.reply('📭 Nenhuma oferta pendente para publicar!')
         }
+
+        const { data: grupos, error: erroGrupo } = await supabase
+          .from('grupos')
+          .select('*')
+
+        if (erroGrupo || !grupos || grupos.length === 0) {
+          return ctx.reply('❌ Nenhum grupo cadastrado! Use /grupos primeiro.')
+        }
+
+        const mensagem = `🔥 OFERTA IMPERDÍVEL! 🔥\n\n${oferta.titulo || 'Produto em promoção'}\n💰 ${oferta.preco || 'Ver preço'}\n📉 Desconto: ${oferta.desconto}%\n👉 ${oferta.link}\n\n🛒 Corre e aproveita!`
+
+        let enviados = 0
+        for (const grupo of grupos) {
+          try {
+            await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                chat_id: grupo.chat_id,
+                text: mensagem,
+                disable_web_page_preview: false
+              })
+            })
+            enviados++
+          } catch (e) {
+            console.log(`Erro ao enviar para ${grupo.nome}:`, e)
+          }
+        }
+
+        await supabase.from('ofertas').update({ enviada: true }).eq('id', oferta.id)
+
+        return ctx.reply(`✅ Oferta publicada com sucesso!\n📤 Enviada para ${enviados} grupo(s)\n🆔 Oferta ID: ${oferta.id}`)
+      } catch (error) {
+        console.error(error)
+        return ctx.reply('❌ Erro ao publicar oferta.')
       }
-
-      // Marca como enviada
-      await supabase.from('ofertas').update({ enviada: true }).eq('id', oferta.id)
-
-      return ctx.reply(`✅ Oferta publicada com sucesso!\n📤 Enviada para ${enviados} grupo(s)\n🆔 Oferta ID: ${oferta.id}`)
-    } catch (error) {
-      console.error(error)
-      return ctx.reply('❌ Erro ao publicar oferta.')
-    }
+    })()
+    return
   }
 
-  // Comando /status — Mostra estatísticas
+ // Comando /status — Mostra estatísticas
   if (comando === '/status') {
-    const { count: pendentes } = await supabase
-      .from('ofertas')
-      .select('*', { count: 'exact', head: true })
-      .eq('enviada', false)
+    (async () => {
+      const { count: pendentes } = await supabase
+        .from('ofertas')
+        .select('*', { count: 'exact', head: true })
+        .eq('enviada', false)
 
-    const { count: total } = await supabase
-      .from('ofertas')
-      .select('*', { count: 'exact', head: true })
+      const { count: total } = await supabase
+        .from('ofertas')
+        .select('*', { count: 'exact', head: true })
 
-    const { count: totalGrupos } = await supabase
-      .from('grupos')
-      .select('*', { count: 'exact', head: true })
+      const { count: totalGrupos } = await supabase
+        .from('grupos')
+        .select('*', { count: 'exact', head: true })
 
-    return ctx.reply(
-      `📊 Status do AfiliFlow:\n\n` +
-      `📋 Ofertas pendentes: ${pendentes || 0}\n` +
-      `✅ Total de ofertas: ${total || 0}\n` +
-      `👥 Grupos ativos: ${totalGrupos || 0}`
-    )
+      return ctx.reply(
+        `📊 Status do AfiliFlow:\n\n` +
+        `📋 Ofertas pendentes: ${pendentes || 0}\n` +
+        `✅ Total de ofertas: ${total || 0}\n` +
+        `👥 Grupos ativos: ${totalGrupos || 0}`
+      )
+    })()
+    return
   }
